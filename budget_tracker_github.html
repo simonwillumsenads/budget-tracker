@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-size: 1.8em;
+        }
+        
+        .setup-section {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .setup-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        
+        .setup-section input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #ffeaa7;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .setup-section button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        
+        .month-display {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 10px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .refresh-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .refresh-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            margin: 5px;
+        }
+        
+        .refresh-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .refresh-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-message {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+        
+        .status-error {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+        
+        .status-warning {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            color: white;
+        }
+        
+        .category-group {
+            margin-bottom: 15px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            background: white;
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .category-header:hover {
+            background: linear-gradient(135deg, #3d8bfe 0%, #00d4fe 100%);
+        }
+        
+        .category-header.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .toggle-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+        
+        .category-header.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .subcategories {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .subcategories.active {
+            max-height: 1000px;
+        }
+        
+        .subcategory {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        
+        .subcategory:hover {
+            background-color: #edf2f7;
+        }
+        
+        .subcategory:last-child {
+            border-bottom: none;
+        }
+        
+        .subcategory-name {
+            font-weight: 500;
+            color: #4a5568;
+            flex: 1;
+        }
+        
+        .balance {
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 6px 12px;
+            border-radius: 20px;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .balance.positive {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+        
+        .balance.negative {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+        
+        .balance.zero {
+            background: #e2e8f0;
+            color: #718096;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .last-updated {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #718096;
+        }
+        
+        .instructions {
+            font-size: 0.9em;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+        
+        .instructions a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .instructions a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .subcategory {
+                padding: 10px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .balance {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Budget Tracker</h1>
+        
+        <div id="setupSection" class="setup-section">
+            <h3>Setup Required</h3>
+            <div class="instructions">
+                <p><strong>Step 1:</strong> Get a Google Sheets API key:</p>
+                <p>1. Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></p>
+                <p>2. Create a new project or select existing one</p>
+                <p>3. Enable the Google Sheets API</p>
+                <p>4. Create credentials (API key)</p>
+                <p>5. Restrict the key to Sheets API only</p>
+                <br>
+                <p><strong>Step 2:</strong> Make your sheet public:</p>
+                <p>1. In Google Sheets, click Share</p>
+                <p>2. Change to "Anyone with the link"</p>
+                <p>3. Set permission to "Viewer"</p>
+            </div>
+            
+            <input type="text" id="apiKey" placeholder="Paste your Google API key here" />
+            <input type="text" id="sheetId" placeholder="Your Google Sheet ID" value="1YqNUGIyrM8NeBAw1nnSoCCFMAk06cKfoWZpd2YEsobA" />
+            <br>
+            <button onclick="saveSettings()">Save Settings</button>
+            <button onclick="testConnection()">Test Connection</button>
+        </div>
+        
+        <div class="month-display" id="monthDisplay" style="display: none;">
+            Budget Overview
+        </div>
+        
+        <div class="refresh-section" id="refreshSection" style="display: none;">
+            <button class="refresh-button" id="refreshButton" onclick="loadBudgetData()">
+                Refresh Data
+            </button>
+            <div class="last-updated" id="lastUpdated"></div>
+        </div>
+        
+        <div id="statusMessage"></div>
+        
+        <div id="budgetView" class="loading" style="display: none;">
+            Ready to load your budget data...
+        </div>
+    </div>
+
+    <script>
+        let budgetData = {};
+        let currentMonth = '';
+        let apiKey = '';
+        let sheetId = '';
+        
+        // Categories you want to display
+        const ALLOWED_CATEGORIES = [
+            '🎉Funny Money🎉',
+            '🏠Hus🏠',
+            '👶Tilde👶',
+            '💣💥Uregelmæssig / Årligt💣💥',
+            '🛒Monthly living🛒'
+        ];
+
+        // Load saved settings
+        function loadSettings() {
+            apiKey = localStorage.getItem('googleApiKey') || '';
+            sheetId = localStorage.getItem('googleSheetId') || '1YqNUGIyrM8NeBAw1nnSoCCFMAk06cKfoWZpd2YEsobA';
+            
+            document.getElementById('apiKey').value = apiKey;
+            document.getElementById('sheetId').value = sheetId;
+            
+            if (apiKey) {
+                hideSetup();
+                loadBudgetData();
+            }
+        }
+        
+        function saveSettings() {
+            apiKey = document.getElementById('apiKey').value.trim();
+            sheetId = document.getElementById('sheetId').value.trim();
+            
+            if (!apiKey) {
+                showStatus('Please enter your Google API key', 'error');
+                return;
+            }
+            
+            if (!sheetId) {
+                showStatus('Please enter your Google Sheet ID', 'error');
+                return;
+            }
+            
+            localStorage.setItem('googleApiKey', apiKey);
+            localStorage.setItem('googleSheetId', sheetId);
+            
+            showStatus('Settings saved! Testing connection...', 'success');
+            testConnection();
+        }
+        
+        function testConnection() {
+            if (!apiKey || !sheetId) {
+                showStatus('Please enter API key and Sheet ID first', 'error');
+                return;
+            }
+            
+            showStatus('Testing Google Sheets API connection...', 'warning');
+            loadBudgetData();
+        }
+        
+        function hideSetup() {
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('monthDisplay').style.display = 'block';
+            document.getElementById('refreshSection').style.display = 'block';
+            document.getElementById('budgetView').style.display = 'block';
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        async function loadBudgetData() {
+            const refreshButton = document.getElementById('refreshButton');
+            
+            try {
+                if (refreshButton) {
+                    refreshButton.disabled = true;
+                    refreshButton.innerHTML = 'Loading...';
+                }
+                
+                showStatus('Loading budget data from Google Sheets...', 'warning');
+                
+                // Get current month in format needed
+                const now = new Date();
+                const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+                
+                // First, get list of all sheets to find the current month
+                const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${apiKey}`;
+                const metadataResponse = await fetch(metadataUrl);
+                
+                if (!metadataResponse.ok) {
+                    const errorData = await metadataResponse.json();
+                    throw new Error(`API Error: ${errorData.error?.message || 'Failed to access spreadsheet'}`);
+                }
+                
+                const metadata = await metadataResponse.json();
+                const sheets = metadata.sheets;
+                
+                // Find the sheet for current month
+                let targetSheet = sheets[0]; // Default to first sheet
+                
+                for (let sheet of sheets) {
+                    const sheetName = sheet.properties.title.toLowerCase();
+                    if (sheetName.includes(currentMonthStr) || 
+                        sheetName.includes('august') || 
+                        sheetName.includes('working')) {
+                        targetSheet = sheet;
+                        break;
+                    }
+                }
+                
+                const sheetName = targetSheet.properties.title;
+                console.log(`Using sheet: ${sheetName}`);
+                
+                // Get the data from the sheet
+                const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
+                const dataResponse = await fetch(dataUrl);
+                
+                if (!dataResponse.ok) {
+                    const errorData = await dataResponse.json();
+                    throw new Error(`Data Error: ${errorData.error?.message || 'Failed to fetch sheet data'}`);
+                }
+                
+                const data = await dataResponse.json();
+                const rows = data.values;
+                
+                if (!rows || rows.length === 0) {
+                    throw new Error('No data found in spreadsheet');
+                }
+                
+                // Process the data
+                parseGoogleSheetsData(rows);
+                
+                showStatus('Data loaded successfully from Google Sheets API!', 'success');
+                hideSetup();
+                
+                // Update last refresh time
+                const updateTime = new Date();
+                const lastUpdatedEl = document.getElementById('lastUpdated');
+                if (lastUpdatedEl) {
+                    lastUpdatedEl.textContent = `Last updated: ${updateTime.toLocaleString('da-DK')}`;
+                }
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                if (refreshButton) {
+                    refreshButton.disabled = false;
+                    refreshButton.innerHTML = 'Refresh Data';
+                }
+            }
+        }
+
+        function parseGoogleSheetsData(rows) {
+            if (!rows || rows.length < 2) {
+                throw new Error('Not enough data rows');
+            }
+
+            const headers = rows[0].map(h => (h || '').toString().trim());
+            console.log('Headers found:', headers);
+            
+            // Find relevant column indices
+            const mainCatIndex = headers.findIndex(h => 
+                h.toLowerCase() === 'main category'
+            );
+            const subCatIndex = headers.findIndex(h => 
+                h.toLowerCase() === 'subcategory'
+            );
+            const availableIndex = headers.findIndex(h => 
+                h.toLowerCase() === 'available'
+            );
+            const monthIndex = headers.findIndex(h => 
+                h.toLowerCase().includes('active month')
+            );
+            
+            console.log('Column indices:', { mainCatIndex, subCatIndex, availableIndex, monthIndex });
+            
+            if (mainCatIndex === -1 || subCatIndex === -1 || availableIndex === -1) {
+                throw new Error(`Missing required columns. Found: Main Category (${mainCatIndex}), Subcategory (${subCatIndex}), Available (${availableIndex})`);
+            }
+
+            budgetData = {};
+            currentMonth = '';
+            let rowsProcessed = 0;
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row || row.length === 0) continue;
+                
+                const mainCategory = (row[mainCatIndex] || '').toString().trim();
+                const subCategory = (row[subCatIndex] || '').toString().trim();
+                const availableStr = (row[availableIndex] || '').toString().trim();
+                const available = parseFloat(availableStr.replace(/[^\d.-]/g, '') || 0);
+                const month = monthIndex >= 0 ? (row[monthIndex] || '').toString().trim() : '';
+
+                if (!mainCategory || !subCategory) {
+                    continue;
+                }
+                
+                // Filter for only allowed categories
+                if (!ALLOWED_CATEGORIES.includes(mainCategory)) {
+                    continue;
+                }
+
+                // Set current month from first valid row
+                if (!currentMonth && month) {
+                    currentMonth = month;
+                }
+
+                if (!budgetData[mainCategory]) {
+                    budgetData[mainCategory] = [];
+                }
+
+                budgetData[mainCategory].push({
+                    name: subCategory,
+                    balance: available
+                });
+                
+                rowsProcessed++;
+            }
+
+            console.log(`Processed ${rowsProcessed} rows from ${Object.keys(budgetData).length} categories`);
+            
+            if (rowsProcessed === 0) {
+                throw new Error('No valid data rows found. Check that your categories match the allowed list.');
+            }
+            
+            renderBudgetView();
+        }
+
+        function renderBudgetView() {
+            const budgetView = document.getElementById('budgetView');
+            const monthDisplay = document.getElementById('monthDisplay');
+            
+            if (Object.keys(budgetData).length === 0) {
+                budgetView.innerHTML = '<div class="loading">No data found for the selected categories.</div>';
+                return;
+            }
+            
+            if (currentMonth) {
+                const [year, month] = currentMonth.split('-');
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                monthDisplay.textContent = `${monthNames[parseInt(month) - 1]} ${year} Budget`;
+            }
+
+            let html = '';
+
+            // Sort categories to maintain consistent order
+            const sortedCategories = Object.keys(budgetData).sort((a, b) => {
+                const indexA = ALLOWED_CATEGORIES.indexOf(a);
+                const indexB = ALLOWED_CATEGORIES.indexOf(b);
+                return indexA - indexB;
+            });
+
+            sortedCategories.forEach(mainCategory => {
+                const subcategories = budgetData[mainCategory];
+                const categoryTotal = subcategories.reduce((sum, sub) => sum + sub.balance, 0);
+
+                html += `
+                    <div class="category-group">
+                        <div class="category-header" onclick="toggleCategory(this)">
+                            <div>
+                                <span>${mainCategory}</span>
+                                <small style="opacity: 0.8; margin-left: 10px;">(${formatCurrency(categoryTotal)})</small>
+                            </div>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="subcategories">
+                            ${subcategories.map(sub => `
+                                <div class="subcategory">
+                                    <span class="subcategory-name">${sub.name}</span>
+                                    <span class="balance ${getBalanceClass(sub.balance)}">${formatCurrency(sub.balance)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            budgetView.innerHTML = html;
+        }
+
+        function toggleCategory(header) {
+            const subcategories = header.nextElementSibling;
+            const isActive = header.classList.contains('active');
+            
+            if (isActive) {
+                header.classList.remove('active');
+                subcategories.classList.remove('active');
+            } else {
+                header.classList.add('active');
+                subcategories.classList.add('active');
+            }
+        }
+
+        function getBalanceClass(balance) {
+            if (balance > 0) return 'positive';
+            if (balance < 0) return 'negative';
+            return 'zero';
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('da-DK', {
+                style: 'currency',
+                currency: 'DKK',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+        });
+    </script>
+</body>
+</html>
